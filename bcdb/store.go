@@ -11,7 +11,7 @@ import (
 
 type Store struct {
 	ActiveFileNumber int    //当前文件编号
-	DataDir          string //数据文件
+	DataDir          string //数据文件夹
 }
 
 //文件块
@@ -89,4 +89,6 @@ func (self *Store) GetFilePath(fnumber int) string {
 	return fmt.Sprintf("%s/db.%d", self.DataDir, fnumber)
 }
 
-var store *Store = &Store{ActiveFileNumber: 0, DataDir: "./"}
+func (self *Store) LoadFileData() {
+
+}

@@ -4,15 +4,18 @@ import (
 	"fmt"
 )
 
+var store *Store
+var hashmap *HashMap
+
 type Bcdb struct {
 }
 
 func NewBcdb() *Bcdb {
-	return &Bcdb{}
-}
-
-func (self *Bcdb) Init() error {
-	return nil
+	db := &Bcdb{}
+	store = &Store{ActiveFileNumber: 0, DataDir: "./"}
+	hashmap = &HashMap{Data: make(map[string]*HashBlock)}
+	//扫描文件
+	return db
 }
 
 func (self *Bcdb) Set(key string, value string, exp int) error {

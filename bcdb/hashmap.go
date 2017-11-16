@@ -31,5 +31,3 @@ func (self *HashMap) Get(key string) *HashBlock {
 	}
 	return hb
 }
-
-var hashmap *HashMap = &HashMap{Data: make(map[string]*HashBlock)}
