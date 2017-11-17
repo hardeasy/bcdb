@@ -38,8 +38,11 @@ func (self *Bcdb) Get(key string) (string, bool) {
 	if hb == nil {
 		return "", false
 	}
-	v, _ := store.Get(hb.FileNumber, hb.ValuePos, hb.ValueLen)
+	v, err := store.Get(hb.FileNumber, hb.ValuePos, hb.ValueLen)
 	fmt.Println("v", v)
+	if err != nil {
+		return "", false
+	}
 
-	return "okkk", false
+	return v, true
 }
