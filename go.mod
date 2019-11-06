@@ -1,4 +1,4 @@
-module gogdb
+module bcdb
 
 go 1.12
 

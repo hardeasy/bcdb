@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"gogdb/api"
-	"gogdb/config"
-	"gogdb/db"
+	"bcdb/api"
+	"bcdb/config"
+	"bcdb/db"
 	"sync"
 )
 
