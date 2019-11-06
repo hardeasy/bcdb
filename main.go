@@ -13,8 +13,10 @@ func preInit() {
 }
 
 func apiServer(db *db.Db) {
-	r := gin.Default()
-	
+	r := gin.New()
+
+	r.Use(gin.Recovery())
+
 	r.Use(func(c *gin.Context) {
 		c.Set("db", db)
 		c.Next()
@@ -33,6 +35,8 @@ func apiServer(db *db.Db) {
 func main() {
 	preInit()
 	db := db.NewDb(config.Db.DataDir)
+	db.Init()
+
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	go func() {

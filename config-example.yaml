@@ -1,2 +1,3 @@
 db:
-  datadir: F:\tmp\db
+  dataDir: F:\tmp\db
+  maxFileSize: 1024 #in KB 1024 is 1MB

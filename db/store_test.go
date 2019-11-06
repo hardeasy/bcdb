@@ -1,7 +1,7 @@
 package db
 
 import (
-	"gogdb/config"
+	"bcdb/config"
 	"testing"
 )
 
