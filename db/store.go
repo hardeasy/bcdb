@@ -1,6 +1,7 @@
 package db
 
 import (
+	"bcdb/tool"
 	bufio2 "bufio"
 	"bytes"
 	"encoding/binary"
@@ -39,6 +40,8 @@ func NewStore(db *Db) *Store {
 }
 
 func (self *Store) Add(key string, value string, expireAt int) (int ,int64, error) {
+	key = string(tool.GzipEncode([]byte(key)))
+	value = string(tool.GzipEncode([]byte(value)))
 	fb := &FileBlock{
 		ExpireAt: expireAt,
 		KeyLen: len(key),
@@ -99,6 +102,8 @@ func (self *Store) GetValue(fileNumber int, pos int64, len int) (string, error){
 	r := bufio2.NewReader(fd)
 	buf := make([]byte, len)
 	r.Read(buf)
+
+	buf = tool.GzipDecode(buf)
 
 	return string(buf), nil
 }
