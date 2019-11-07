@@ -4,7 +4,7 @@ import "sync"
 
 //hash存储的块
 type HashBlock struct {
-	FileNumber int   //文件编号
+	FileNumber int   //文件编号 0为当前db
 	ValuePos   int64   //值的位置
 	ValueLen   int   //值的长度
 	ExpireAt  int   //到期时间戳 秒

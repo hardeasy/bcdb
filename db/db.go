@@ -1,6 +1,7 @@
 package db
 
 import (
+	"bcdb/cache"
 	"errors"
 )
 
@@ -34,10 +35,16 @@ func (self *Db) Add(key string, value string, expireAt int) error {
 	hb.ValuePos = fb.ValuePos
 	hb.ValueLen = fb.ValueLen
 
+	cache.Cache.Set(key, value)
+
 	return nil
 }
 
 func (self *Db) Get(key string) (string, error){
+	if value,err := cache.Cache.Get(key); err != nil {
+		return value, nil
+	}
+
 	hb := self.Hashmap.Get(key)
 	if hb == nil {
 		return "", nil

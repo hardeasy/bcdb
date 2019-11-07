@@ -26,7 +26,7 @@ type FileBlock struct {
 	Key       string //key数据
 	Value     string //值
 
-	FileNumber int
+	FileNumber int  //文件编号 0为当前db
 	ValuePos   int64
 }
 
@@ -38,6 +38,7 @@ type Store struct {
 	DB *Db //当前的db
 	FileLock sync.Mutex //写文件锁
 }
+
 func NewStore(db *Db) *Store {
 	store := &Store{
 		DB: db,
@@ -178,12 +179,12 @@ func (self *Store) GetDataDirFileNumbers() []int {
 func (self *Store) LoadAllFileData(in chan<- FileBlock) {
 	nums := self.GetDataDirFileNumbers()
 	for _,num := range nums {
-		self.loadFileData(num, in)
+		self.LoadFileData(num, in)
 	}
 	close(in)
 }
 
-func (self *Store) loadFileData(fileNum int, in chan<- FileBlock) {
+func (self *Store) LoadFileData(fileNum int, in chan<- FileBlock) {
 	filepath := self.GetFilePath(fileNum)
 	fd, err := os.OpenFile(filepath, os.O_RDONLY, 0644)
 	if err != nil {

@@ -25,6 +25,6 @@ func loadDbConfig() {
 		Db.DataDir = Db.DataDir + string(os.PathSeparator)
 	}
 
-	viper.SetDefault("db.maxFileSize",1024)
+	viper.SetDefault("db.maxFileSize",1024 * 1000)
 	Db.MaxFileSize = viper.GetInt64("db.maxFileSize")
 }
