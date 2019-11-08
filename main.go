@@ -28,6 +28,7 @@ func apiServer(db *db.Db) {
 
 	r.GET("/:key", api.Store.Get)
 	r.POST("/:key", api.Store.Set)
+	r.DELETE("/:key", api.Store.Delete)
 
 	r.Run()
 }

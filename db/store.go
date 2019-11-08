@@ -26,7 +26,7 @@ type FileBlock struct {
 	Key       string //key数据
 	Value     string //值
 
-	FileNumber int  //文件编号 0为当前db
+	FileNumber int  //文件编号 -1为快照
 	ValuePos   int64
 }
 
@@ -48,6 +48,26 @@ func NewStore(db *Db) *Store {
 }
 
 func (self *Store) updateActiveFileNumber() {
+	if self.DB.IsRunMerge == true {
+		return
+	}
+
+	if len(self.GetDataDirFileNumbers()) > 10 {
+		go func() {
+			self.DB.merge.Run(self.GetDataDirFileNumbers())
+		}()
+
+		oldFileNumber := self.ActiveFileNumber
+		self.ActiveFileNumberChangeLock.Lock()
+		defer self.ActiveFileNumberChangeLock.Unlock()
+
+		if oldFileNumber == self.ActiveFileNumber {
+			self.ActiveFileNumber++
+		}
+
+		return
+	}
+
 	fd,err := os.OpenFile(self.getActiveFilePath(), os.O_RDONLY, 0644)
 	if err != nil {
 		return
@@ -74,32 +94,9 @@ func (self *Store) updateActiveFileNumber() {
 func (self *Store) Add(key string, value string, expireAt int) (*FileBlock, error) {
 	self.updateActiveFileNumber()
 
-	key = string(tool.GzipEncode([]byte(key)))
-	value = string(tool.GzipEncode([]byte(value)))
-	fb := &FileBlock{
-		ExpireAt: expireAt,
-		KeyLen: len(key),
-		ValueLen: len(value),
-		Key: key,
-		Value: value,
-	}
-	crcString := fmt.Sprintf("%d%d%d%s%s",
-		fb.ExpireAt,
-		fb.KeyLen,
-		fb.ValueLen,
-		fb.Key,
-		fb.Value,
-	)
-	fb.Crc = crc32.ChecksumIEEE([]byte(crcString))
+	fb := self.GetStoreFileBlock(key, value, expireAt)
 
-	buffer := bytes.NewBuffer([]byte{})
-	binary.Write(buffer, binary.BigEndian, int64(fb.Crc))
-	binary.Write(buffer, binary.BigEndian, int64(fb.ExpireAt))
-	binary.Write(buffer, binary.BigEndian, int64(fb.KeyLen))
-	binary.Write(buffer, binary.BigEndian, int64(fb.ValueLen))
-
-	buffer.Write([]byte(fb.Key))
-	buffer.Write([]byte(fb.Value))
+	fileStoreBytes := self.GetFileStoreBytes(fb)
 
 	fd, err := os.OpenFile(self.getActiveFilePath(), os.O_CREATE | os.O_WRONLY | os.O_APPEND, 0644)
 	if err != nil {
@@ -110,7 +107,7 @@ func (self *Store) Add(key string, value string, expireAt int) (*FileBlock, erro
 	self.FileLock.Lock()
 	defer self.FileLock.Unlock()
 	currOffset,err := fd.Seek(0, os.SEEK_END)
-	_,err = fd.Write(buffer.Bytes())
+	_,err = fd.Write(fileStoreBytes)
 	if err != nil {
 		return nil, err
 	}
@@ -144,11 +141,50 @@ func (self *Store) GetValue(fileNumber int, pos int64, len int) (string, error){
 	return string(buf), nil
 }
 
+func (self *Store) GetStoreFileBlock(key, value string, expireAt int) *FileBlock {
+	key = string(tool.GzipEncode([]byte(key)))
+	value = string(tool.GzipEncode([]byte(value)))
+
+	fb := &FileBlock{
+		ExpireAt: expireAt,
+		KeyLen: len(key),
+		ValueLen: len(value),
+		Key: key,
+		Value: value,
+	}
+	crcString := fmt.Sprintf("%d%d%d%s%s",
+		fb.ExpireAt,
+		fb.KeyLen,
+		fb.ValueLen,
+		fb.Key,
+		fb.Value,
+	)
+	fb.Crc = crc32.ChecksumIEEE([]byte(crcString))
+	return fb
+}
+
+func (self *Store) GetFileStoreBytes(fb *FileBlock) ([]byte){
+
+	buffer := bytes.NewBuffer([]byte{})
+	binary.Write(buffer, binary.BigEndian, int64(fb.Crc))
+	binary.Write(buffer, binary.BigEndian, int64(fb.ExpireAt))
+	binary.Write(buffer, binary.BigEndian, int64(fb.KeyLen))
+	binary.Write(buffer, binary.BigEndian, int64(fb.ValueLen))
+
+	buffer.Write([]byte(fb.Key))
+	buffer.Write([]byte(fb.Value))
+
+	return buffer.Bytes()
+}
+
 func (self *Store) getActiveFilePath() string {
 	return self.GetFilePath(self.ActiveFileNumber)
 }
 
 func (self *Store) GetFilePath(fileNumber int) string {
+	if fileNumber == -1 {
+		return fmt.Sprintf("%ssdb",config.Db.DataDir)
+	}
 	return fmt.Sprintf("%sdb.%d",config.Db.DataDir, fileNumber)
 }
 

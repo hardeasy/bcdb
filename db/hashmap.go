@@ -4,7 +4,7 @@ import "sync"
 
 //hash存储的块
 type HashBlock struct {
-	FileNumber int   //文件编号 0为当前db
+	FileNumber int   //文件编号 -1为快照
 	ValuePos   int64   //值的位置
 	ValueLen   int   //值的长度
 	ExpireAt  int   //到期时间戳 秒
@@ -26,6 +26,7 @@ func (self *Hashmap) Add(key string, value string, expireAt int) *HashBlock {
 	defer self.Lock.Unlock()
 	if v,ok := self.Data[key];ok{
 		v.ValueLen = len(value)
+		v.ExpireAt = expireAt
 		return v
 	}
 	hb := &HashBlock{

@@ -2,7 +2,6 @@ package cache
 
 import (
 	"bcdb/config"
-	"github.com/pkg/errors"
 	"sort"
 	"sync"
 	"time"
@@ -32,7 +31,7 @@ type cache struct {
 	Size int  //个数
 	Data map[string]string
 	Indexs indexs
-	Lock sync.RWMutex
+	Lock sync.Mutex
 	recoverLock sync.Mutex
 }
 
@@ -74,13 +73,15 @@ func (self *cache) Set(key string, value string) {
 	}
 }
 
-func (self *cache) Get(key string) (string, error) {
-	self.Lock.RLock()
-	defer self.Lock.RUnlock()
+func (self *cache) Get(key string) (string, bool) {
+	self.Lock.Lock()
+	defer self.Lock.Unlock()
 	if value,ok := self.Data[key]; ok {
-		return value, nil
+		index := self.searchIndexsKeyIndex(key)
+		self.Indexs[index].LastUsedTime = time.Now().UnixNano()
+		return value, true
 	}
-	return "", errors.New("not exists")
+	return "", false
 }
 
 func (self *cache) Delete(key string) {
@@ -107,6 +108,15 @@ func (self *cache) Delete(key string) {
 	self.Used -= int64(length)
 }
 
+func (self *cache) searchIndexsKeyIndex(key string) int {
+	for i,item := range self.Indexs {
+		if item.Key == key {
+			return i
+		}
+	}
+	return -1
+}
+
 func (self *cache) recover() {
 	oldUsed := self.Used
 	self.recoverLock.Lock()
@@ -118,5 +128,4 @@ func (self *cache) recover() {
 	for self.Used > (config.Cache.MaxSize * 1000) && self.Size > 1 {
 		self.Delete(self.Indexs[0].Key)
 	}
-
 }

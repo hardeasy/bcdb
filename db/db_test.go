@@ -13,6 +13,6 @@ func TestDbAddGet(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	value,err := db.Get("name4")
-	t.Log(value)
+	value, exists, err := db.Get("name4")
+	t.Log(value,exists)
 }

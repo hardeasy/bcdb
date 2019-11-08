@@ -1,6 +1,5 @@
 db:
   dataDir: F:\tmp\db
   maxFileSize: 1024000 #in KB 1024 is 1MB
-  maxFiles: 5 #Maximum number of files allowed,
 cache:
   maxSize: 102400 #in KB 1024 is 1MB

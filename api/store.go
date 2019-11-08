@@ -60,10 +60,31 @@ func (self *store) Get(c *gin.Context) {
 		return
 	}
 
-	value, err := thisdb.Get(key)
+	value, exists, err := thisdb.Get(key)
 	if err != nil {
 		c.String(500, err.Error())
 		return
 	}
+	if !exists {
+		c.String(404, "not found")
+		return
+	}
+
 	c.String(200, value)
 }
+
+func (self *store) Delete(c *gin.Context) {
+	key := c.Param("key")
+	if len(key) == 0 {
+		c.String(400, "params key not empty")
+		return
+	}
+	thisdb,ok := c.Keys["db"].(*db.Db)
+	if !ok {
+		c.String(500, "db error")
+		return
+	}
+	thisdb.Delete(key)
+	c.String(200, "ok")
+}
+

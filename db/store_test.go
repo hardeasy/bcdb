@@ -13,7 +13,7 @@ func TestCalculationActiveFileNumber(t *testing.T){
 
 func TestAdd(t *testing.T) {
 	db := NewDb(config.Db.DataDir)
-	_, _ , err := db.Store.Add("name", "dsadsa2321", 0)
+	_, err := db.Store.Add("name", "dsadsa2321", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
