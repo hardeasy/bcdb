@@ -8,7 +8,7 @@ import (
 
 type db struct {
 	DataDir string
-	MaxFileSize int64
+	MaxFileSize string
 }
 
 var Db *db
@@ -25,6 +25,6 @@ func loadDbConfig() {
 		Db.DataDir = Db.DataDir + string(os.PathSeparator)
 	}
 
-	viper.SetDefault("db.maxFileSize",1024 * 1000)
-	Db.MaxFileSize = viper.GetInt64("db.maxFileSize")
+	viper.SetDefault("db.maxFileSize","100M")
+	Db.MaxFileSize = viper.GetString("db.maxFileSize")
 }

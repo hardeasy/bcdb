@@ -14,3 +14,19 @@ func TestGzipEncodeAndDecode(t *testing.T) {
 	}
 	t.Log("raw len: ", len(rawData), "encde len: ", len(encodeData))
 }
+
+func TestStrToByteSize(t *testing.T) {
+	validateArr := map[string]int64{
+		"2gb": 2 * 1024 * 1024 * 1024,
+		"2M": 2 * 1024 * 1024,
+		"2kb": 2 * 1024,
+		"2": 2,
+		"1dsada1": 0,
+	}
+	for k,v := range validateArr {
+		num := StrToByteSize(k)
+		if num != v {
+			t.Fail()
+		}
+	}
+}

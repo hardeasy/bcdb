@@ -1,5 +1,5 @@
 db:
   dataDir: F:\tmp\db
-  maxFileSize: 1024000 #in KB 1024 is 1MB
+  maxFileSize: 2G # K M G
 cache:
-  maxSize: 102400 #in KB 1024 is 1MB
+  maxSize: 200M #K M G

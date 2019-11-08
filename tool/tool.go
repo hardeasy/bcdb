@@ -6,6 +6,8 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"strconv"
+	"strings"
 )
 
 func GzipEncode(data []byte) []byte {
@@ -39,4 +41,32 @@ func CopyFile(dstName, srcName string) (written int64, err error) {
 	}
 	defer dst.Close()
 	return io.Copy(dst, src)
+}
+
+func StrToByteSize(str string) int64 {
+	str = strings.ToLower(str)
+	if index := strings.Index(str, "g"); index != -1 {
+		tnum,_:= strconv.Atoi(string(str[0:index]))
+		num := int64(tnum)
+		num *= 1024 * 1024 * 1024
+		return num
+	}
+
+	if index := strings.Index(str, "m"); index != -1 {
+		tnum,_:= strconv.Atoi(string(str[0:index]))
+		num := int64(tnum)
+		num *= 1024 * 1024
+		return num
+	}
+
+	if index := strings.Index(str, "k"); index != -1 {
+		tnum,_:= strconv.Atoi(string(str[0:index]))
+		num := int64(tnum)
+		num *= 1024
+		return num
+	}
+
+	num,_ := strconv.Atoi(str)
+
+	return int64(num)
 }

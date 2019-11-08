@@ -79,7 +79,7 @@ func (self *Store) updateActiveFileNumber() {
 		return
 	}
 
-	if fileInfo.Size() > config.Db.MaxFileSize * 1000 {
+	if fileInfo.Size() > tool.StrToByteSize(config.Db.MaxFileSize) {
 		oldFileNumber := self.ActiveFileNumber
 
 		self.ActiveFileNumberChangeLock.Lock()

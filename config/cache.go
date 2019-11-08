@@ -3,14 +3,14 @@ package config
 import "github.com/spf13/viper"
 
 type cache struct {
-	MaxSize int64
+	MaxSize string
 }
 
 var Cache *cache
 
 func loadCacheConfig() {
-	viper.SetDefault("cache.maxSize", 1024 * 200) //200 M
+	viper.SetDefault("cache.maxSize", "200M") //200 M
 	Cache = &cache{
-		MaxSize: viper.GetInt64("cache.maxSize"),
+		MaxSize: viper.GetString("cache.maxSize"),
 	}
 }

@@ -2,6 +2,7 @@ package cache
 
 import (
 	"bcdb/config"
+	"bcdb/tool"
 	"sort"
 	"sync"
 	"time"
@@ -66,7 +67,7 @@ func (self *cache) Set(key string, value string) {
 	self.Used += int64(indexItem.Length)
 	self.Size++
 
-	if (self.Used) > (config.Cache.MaxSize * 1000) {
+	if (self.Used) > tool.StrToByteSize(config.Cache.MaxSize) {
 		go func() {
 			self.recover()
 		}()
@@ -125,7 +126,7 @@ func (self *cache) recover() {
 		return
 	}
 	sort.Sort(self.Indexs)
-	for self.Used > (config.Cache.MaxSize * 1000) && self.Size > 1 {
+	for self.Used > (tool.StrToByteSize(config.Cache.MaxSize)) && self.Size > 1 {
 		self.Delete(self.Indexs[0].Key)
 	}
 }
