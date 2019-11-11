@@ -4,7 +4,9 @@ import (
 	"bcdb/cache"
 	"errors"
 	"os"
+	"os/signal"
 	"sort"
+	"syscall"
 	"time"
 )
 
@@ -27,7 +29,31 @@ func NewDb(dataDir string) *Db{
 
 func (self *Db) Init() {
 	self.preInit()
-	self.LoadAllFileData()
+	self.signalHandler()
+
+	//load data
+	err := LoadHintFile(self)
+	if err != nil {
+		self.LoadAllFileData()
+	}
+
+}
+
+func (self *Db) signalHandler() {
+	//singal
+	signalChan := make(chan os.Signal)
+	signal.Notify(signalChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	go func() {
+		<-signalChan
+		self.Shutdown()
+		os.Exit(0)
+	}()
+}
+
+func (self *Db) Shutdown() {
+	if self.IsRunMerge == false {
+		CreateHintFile(self)
+	}
 }
 
 func (self *Db) preInit() {
@@ -39,13 +65,19 @@ func (self *Db) preInit() {
 		return
 	}
 	activeNum := nums[len(nums) - 1]
+	renameFile := false
 	for index,num := range nums {
 		if num != index{
 			os.Rename(self.Store.GetFilePath(num), self.Store.GetFilePath(index))
+			renameFile = true
 		}
 		activeNum = index
 	}
 	self.Store.ActiveFileNumber = activeNum
+
+	if renameFile {
+		DeleteHintFile()
+	}
 }
 
 func (self *Db) Add(key string, value string, expireAt int) error {
